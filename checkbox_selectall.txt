@@ -1,0 +1,186 @@
+https://codesandbox.io/s/material-ui-multiple-select-with-select-all-option-givp5?file=/src/App.js
+
+import React, { useState } from "react";
+import Checkbox from "@material-ui/core/Checkbox";
+import InputLabel from "@material-ui/core/InputLabel";
+import ListItemIcon from "@material-ui/core/ListItemIcon";
+import ListItemText from "@material-ui/core/ListItemText";
+import MenuItem from "@material-ui/core/MenuItem";
+import FormControl from "@material-ui/core/FormControl";
+import Select from "@material-ui/core/Select";
+
+import { MenuProps, useStyles, options } from "./utils";
+
+function App() {
+  const classes = useStyles();
+  const [selected, setSelected] = useState([]);
+  const isAllSelected =
+    options.length > 0 && selected.length === options.length;
+
+  const handleChange = (event) => {
+    const value = event.target.value;
+    if (value[value.length - 1] === "all") {
+      setSelected(selected.length === options.length ? [] : options);
+      return;
+    }
+    setSelected(value);
+  };
+
+  return (
+    <FormControl className={classes.formControl}>
+      <InputLabel id="mutiple-select-label">Multiple Select</InputLabel>
+      <Select
+        labelId="mutiple-select-label"
+        multiple
+        value={selected}
+        onChange={handleChange}
+        renderValue={(selected) => selected.join(", ")}
+        MenuProps={MenuProps}
+      >
+        <MenuItem
+          value="all"
+          classes={{
+            root: isAllSelected ? classes.selectedAll : ""
+          }}
+        >
+          <ListItemIcon>
+            <Checkbox
+              classes={{ indeterminate: classes.indeterminateColor }}
+              checked={isAllSelected}
+              indeterminate={
+                selected.length > 0 && selected.length < options.length
+              }
+            />
+          </ListItemIcon>
+          <ListItemText
+            classes={{ primary: classes.selectAllText }}
+            primary="Select All"
+          />
+        </MenuItem>
+        {options.map((option) => (
+          <MenuItem key={option} value={option}>
+            <ListItemIcon>
+              <Checkbox checked={selected.indexOf(option) > -1} />
+            </ListItemIcon>
+            <ListItemText primary={option} />
+          </MenuItem>
+        ))}
+      </Select>
+    </FormControl>
+  );
+}
+
+export default App;
+
+
+
+
+
+===================================================================================================
+import { useState, useEffect } from "react";
+import ReactDOM from "react-dom";
+import { Checkbox } from "@material-ui/core";
+
+const Items = () => {
+  const [categories, setCategories] = useState([]);
+  const [checkedList, setCheckedList] = useState([]);
+  const [itemsChecked, setItemsChecked] = useState(false);
+
+  useEffect(() => {
+    const initialCategories = [
+      {
+        id: 1,
+        items: [
+          { name: "item 1", id: Math.floor(Math.random() * 99999) },
+          { name: "item 2", id: Math.floor(Math.random() * 99999) },
+          { name: "item 3", id: Math.floor(Math.random() * 99999) },
+          { name: "item 4", id: Math.floor(Math.random() * 99999) }
+        ]
+      },
+      
+    ];
+
+    setCategories(initialCategories);
+  }, []);
+
+  const handleCheckboxClick = (e) => {
+    const { value, checked } = e.target;
+
+    if (checked) {
+      setCheckedList([...checkedList, value * 1]); //*1 해줘야 number로 들어가서 type 호환이 됨.
+    } else {
+      setCheckedList(checkedList.filter((item) => item != value));
+    }
+  };
+
+  const selectItem = (e) => {
+    const { checked } = e.target;
+    const collection = [];
+
+    if (checked) {
+      for (const category of categories) {
+        for (const item of category.items) {
+          collection.push(item.id);
+        }
+      }
+    }
+
+    setCheckedList(collection);
+    setItemsChecked(checked);
+  };
+
+  return (
+    <div>
+        <label>
+          <Checkbox checked={itemsChecked} onClick={selectItem.bind(this)} />
+          Select all
+        </label>
+      {categories.map((category) => {
+        return (
+          <ItemCategory
+            {...category}
+            key={category.id}
+            handleCheckboxClick={handleCheckboxClick}
+            checkedList={checkedList}
+          />
+        );
+      })}
+    </div>
+  );
+};
+
+const ItemCategory = (props) => {
+  const { items, checkedList, handleCheckboxClick } = props;
+
+  const getItems = items.map((item) => {
+    return item;
+  });
+
+  return (
+    <div>
+      
+        {getItems.map((item) => {
+          return (
+            <li key={item.id} style={{"list-style-type": "none", "paddingLeft": "1.5rem"}}>
+              <Checkbox
+                item={item}
+                value={item.id}
+                checked={checkedList.includes(item.id)}
+                onChange={handleCheckboxClick}
+              />
+              {item.name}
+            </li>
+          );
+        })}
+
+    </div>
+  );
+};
+
+function App() {
+  return <Items />;
+}
+
+const rootElement = document.getElementById("root");
+ReactDOM.render(<App />, rootElement);
+
